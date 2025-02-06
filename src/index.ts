@@ -12,10 +12,12 @@ program
     .description('티켓 번호로 release candidate 브랜치를 자동 생성하는 CLI 도구 (release-easy)')
     .requiredOption('-t, --ticket <ticketId>', 'JIRA 티켓 번호 (예: PROJ-123)')
     .option('-r, --release <releaseName>', 'Release candidate 브랜치 이름 (기본: release/<오늘날짜>)')
-    // 운영 브랜치 기본값을 "main"으로 변경함
+    // 운영 브랜치 기본값을 "main"으로 설정
     .option('-p, --prod <prodBranch>', '운영 베이스 브랜치 (기본: main)', 'main')
-    // 개발 브랜치 기본값은 "dev"로 유지
-    .option('-d, --develop <developBranch>', '개발 브랜치 (기본: dev)', 'dev');
+    // 개발 브랜치 기본값을 "dev"로 설정
+    .option('-d, --develop <developBranch>', '개발 브랜치 (기본: dev)', 'dev')
+    // dry-run 옵션 추가
+    .option('--dry-run', 'Dry run mode: simulate actions without executing git commands');
 
 program.parse(process.argv);
 const options = program.opts();
@@ -23,7 +25,9 @@ const options = program.opts();
 const ticketId: string = options.ticket;
 const prodBranch: string = options.prod;
 const developBranch: string = options.develop;
-const releaseBranch: string = options.release || `release/${new Date().toISOString().split('T')[0]}`;
+const releaseBranch: string =
+    options.release || `release/${new Date().toISOString().split('T')[0]}`;
+const dryRun: boolean = options.dryRun || false;
 
 const git: SimpleGit = simpleGit();
 
@@ -37,11 +41,15 @@ async function runReleaseProcess(): Promise<void> {
             console.error(`개발 브랜치 ${developBranch}가 존재하지 않습니다.`);
             return;
         }
-        await git.checkout(developBranch);
+        if (dryRun) {
+            console.log(`[DRY-RUN] Would checkout branch: ${developBranch}`);
+        } else {
+            await git.checkout(developBranch);
+        }
 
         // 2. 최근 커밋 로그(예: 최근 100개) 중에서 티켓 번호가 포함된 커밋 검색
         const log = await git.log({ n: 100 });
-        const commits = log.all.filter(commit => commit.message.includes(ticketId));
+        const commits = log.all.filter((commit) => commit.message.includes(ticketId));
 
         if (commits.length === 0) {
             console.log(`티켓 번호 ${ticketId}가 포함된 커밋을 찾을 수 없습니다.`);
@@ -49,27 +57,36 @@ async function runReleaseProcess(): Promise<void> {
         }
 
         console.log(`검색된 커밋 목록:`);
-        commits.forEach(commit => {
+        commits.forEach((commit) => {
             console.log(`- ${commit.hash}: ${commit.message}`);
         });
 
         // 3. 운영 브랜치(prodBranch)로 전환 후, 새로운 release 브랜치 생성
-        console.log(`\n${prodBranch} 브랜치로 전환 후, ${releaseBranch} 브랜치를 생성합니다...`);
-        await git.checkout(prodBranch);
-        await git.checkoutBranch(releaseBranch, prodBranch);
-        console.log(`새 release 브랜치 ${releaseBranch} 생성 완료.`);
+        if (dryRun) {
+            console.log(`[DRY-RUN] Would checkout branch: ${prodBranch}`);
+            console.log(`[DRY-RUN] Would create and checkout new branch: ${releaseBranch} from ${prodBranch}`);
+        } else {
+            console.log(`\n${prodBranch} 브랜치로 전환 후, ${releaseBranch} 브랜치를 생성합니다...`);
+            await git.checkout(prodBranch);
+            await git.checkoutBranch(releaseBranch, prodBranch);
+            console.log(`새 release 브랜치 ${releaseBranch} 생성 완료.`);
+        }
 
         // 4. 검색된 각 커밋을 순차적으로 cherry-pick
         for (const commit of commits) {
-            try {
-                console.log(`Cherry-picking 커밋 ${commit.hash}...`);
-                await git.raw(['cherry-pick', commit.hash]);
-                console.log(`커밋 ${commit.hash} cherry-pick 성공.`);
-            } catch (err) {
-                console.error(`커밋 ${commit.hash} cherry-pick 중 에러 발생:`, err);
-                console.log(`문제가 발생하여 cherry-pick을 abort 합니다.`);
-                await git.raw(['cherry-pick', '--abort']);
-                return;
+            if (dryRun) {
+                console.log(`[DRY-RUN] Would cherry-pick commit ${commit.hash}`);
+            } else {
+                try {
+                    console.log(`Cherry-picking 커밋 ${commit.hash}...`);
+                    await git.raw(['cherry-pick', commit.hash]);
+                    console.log(`커밋 ${commit.hash} cherry-pick 성공.`);
+                } catch (err) {
+                    console.error(`커밋 ${commit.hash} cherry-pick 중 에러 발생:`, err);
+                    console.log(`문제가 발생하여 cherry-pick을 abort 합니다.`);
+                    await git.raw(['cherry-pick', '--abort']);
+                    return;
+                }
             }
         }
 
