@@ -32,6 +32,11 @@ async function runReleaseProcess(): Promise<void> {
         console.log(`티켓번호 ${ticketId}에 해당하는 커밋을 ${developBranch} 브랜치에서 검색합니다...`);
 
         // 1. 개발 브랜치(dev)로 전환
+        const branches = await git.branch();
+        if (!branches.all.includes(developBranch)) {
+            console.error(`개발 브랜치 ${developBranch}가 존재하지 않습니다.`);
+            return;
+        }
         await git.checkout(developBranch);
 
         // 2. 최근 커밋 로그(예: 최근 100개) 중에서 티켓 번호가 포함된 커밋 검색
