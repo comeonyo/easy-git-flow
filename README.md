@@ -1,10 +1,10 @@
-# Release Easy
+# Easy Git Flow
 
-Release Easy는 JIRA 티켓 번호를 기반으로 release candidate 브랜치를 자동으로 생성해주는 CLI 도구입니다. Git 작업 프로세스를 간소화하고 실수를 줄이는 것을 목표로 합니다.
+Easy Git Flow는 JIRA 티켓 번호를 기반으로 release candidate 브랜치를 자동으로 생성해주는 CLI 도구입니다. Git 작업 프로세스를 간소화하고 실수를 줄이는 것을 목표로 합니다.
 
 ## 주요 기능
 
-Release Easy는 다음과 같은 작업을 자동화합니다:
+Easy Git Flow는 다음과 같은 작업을 자동화합니다:
 
 - develop 브랜치에서 특정 JIRA 티켓 번호가 포함된 커밋들을 검색
 - 검색된 커밋들을 새로운 release candidate 브랜치에 자동으로 cherry-pick
