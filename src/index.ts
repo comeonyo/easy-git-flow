@@ -16,7 +16,7 @@ program
     .option('-p, --prod <prodBranch>', '운영 베이스 브랜치 (기본: main)', 'main')
     // 개발 브랜치 기본값을 "dev"로 설정
     .option('-d, --develop <developBranch>', '개발 브랜치 (기본: dev)', 'dev')
-    // dry-run 옵션 추가
+    // dry-run 옵션 수정
     .option('--dry-run', 'Dry run mode: simulate actions without executing git commands');
 
 program.parse(process.argv);
