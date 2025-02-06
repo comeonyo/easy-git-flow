@@ -1,6 +1,6 @@
 {
   "name": "easy-git-flow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "티켓 번호 기반으로 release candidate 브랜치를 자동 생성하는 CLI 도구",
   "main": "dist/index.js",
   "bin": {
