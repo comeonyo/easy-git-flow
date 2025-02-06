@@ -9,11 +9,13 @@ const program = new Command();
 // CLI 옵션 설정
 program
     .version('1.0.0')
-    .description('티켓 번호로 release candidate 브랜치를 자동 생성하는 CLI 도구 (easy-git-flow)')
+    .description('티켓 번호로 release candidate 브랜치를 자동 생성하는 CLI 도구 (release-easy)')
     .requiredOption('-t, --ticket <ticketId>', 'JIRA 티켓 번호 (예: PROJ-123)')
     .option('-r, --release <releaseName>', 'Release candidate 브랜치 이름 (기본: release/<오늘날짜>)')
-    .option('-p, --prod <prodBranch>', '운영 베이스 브랜치 (기본: master)', 'master')
-    .option('-d, --develop <developBranch>', '개발 브랜치 (기본: develop)', 'develop');
+    // 운영 브랜치 기본값을 "main"으로 변경함
+    .option('-p, --prod <prodBranch>', '운영 베이스 브랜치 (기본: main)', 'main')
+    // 개발 브랜치 기본값은 "dev"로 유지
+    .option('-d, --develop <developBranch>', '개발 브랜치 (기본: dev)', 'dev');
 
 program.parse(process.argv);
 const options = program.opts();
@@ -29,7 +31,7 @@ async function runReleaseProcess(): Promise<void> {
     try {
         console.log(`티켓번호 ${ticketId}에 해당하는 커밋을 ${developBranch} 브랜치에서 검색합니다...`);
 
-        // 1. develop 브랜치로 전환
+        // 1. 개발 브랜치(dev)로 전환
         await git.checkout(developBranch);
 
         // 2. 최근 커밋 로그(예: 최근 100개) 중에서 티켓 번호가 포함된 커밋 검색
@@ -46,7 +48,7 @@ async function runReleaseProcess(): Promise<void> {
             console.log(`- ${commit.hash}: ${commit.message}`);
         });
 
-        // 3. prodBranch로 전환 후, 새로운 release 브랜치 생성
+        // 3. 운영 브랜치(prodBranch)로 전환 후, 새로운 release 브랜치 생성
         console.log(`\n${prodBranch} 브랜치로 전환 후, ${releaseBranch} 브랜치를 생성합니다...`);
         await git.checkout(prodBranch);
         await git.checkoutBranch(releaseBranch, prodBranch);
