@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",             // 원하는 ECMAScript 버전 설정
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,        // default: true, 모듈 간 호환성 위해 필요함
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

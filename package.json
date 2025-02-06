@@ -1,0 +1,37 @@
+{
+  "name": "easy-git-flow",
+  "version": "1.0.0",
+  "description": "티켓 번호 기반으로 release candidate 브랜치를 자동 생성하는 CLI 도구",
+  "main": "dist/index.js",
+  "bin": {
+    "easy-git-flow": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/comeonyo/easy-git-flow.git"
+  },
+  "keywords": [
+    "cli",
+    "release",
+    "automation",
+    "git",
+    "typescript"
+  ],
+  "author": "comeonyo",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "simple-git": "^3.16.0"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/node": "^22.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.7.3"
+  }
+}
